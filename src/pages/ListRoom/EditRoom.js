@@ -1,4 +1,4 @@
-import { Button, Form, Modal, Select, Switch, Input, InputNumber, message } from "antd";
+import { Button, Form, Modal, Select, Switch, Input, InputNumber, notification } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { updateRoom } from "../../services/roomsService";
@@ -9,7 +9,7 @@ function EditRoom(props) {
   const { record, onReload } = props
   const [showModal, setShowModal] = useState(false);
   const [form] = Form.useForm();
-  const [messageApi, contexHolder] = message.useMessage();
+  const [notiApi, contextHolder] = notification.useNotification();
 
   const rules = [
     {
@@ -21,17 +21,18 @@ function EditRoom(props) {
   const handleSubmit = async (values) => {
     const response = await updateRoom(record.id, values);
     if (response) {
-      messageApi.open({
-        type: 'success',
-        content: 'Cập nhật thành công!',
-        duration: 5
+      notiApi.success({
+        message: 'Cập nhật thành công!',
+        description: `Bạn đã cập nhật thành công phòng ${record.roomName}`,
+        duration: 3
       });
       setShowModal(false);
       onReload();
     } else {
-      messageApi.open({
-        type: 'error',
-        content: 'Cập nhật thất bại',
+      notiApi.error({
+        message: 'Cập nhật thất bại!',
+        description: `Bạn đã cập nhật thất bại phòng ${record.roomName}`,
+        duration: 3
       });
       setShowModal(false);
     }
@@ -48,7 +49,7 @@ function EditRoom(props) {
 
   return (
     <>
-      {contexHolder}
+      {contextHolder}
       <Button
         size="small"
         type="primary"
