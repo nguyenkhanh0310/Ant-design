@@ -1,9 +1,11 @@
-import { Form, Input, Button, Select, InputNumber, Switch } from "antd";
+import { Form, Input, Button, Select, InputNumber, Switch, message } from "antd";
 import { createRoom } from "../../services/roomsService";
 const { Option } = Select;
 
 function CreateRoom() {
   const [form] = Form.useForm();
+  const [messageApi, contexHolder] = message.useMessage();
+
   const rules = [
     {
       required: true,
@@ -15,11 +17,28 @@ function CreateRoom() {
     const response = await createRoom(values);
     if(response) {
       form.resetFields();
+      const success = () => {
+        messageApi.open({
+          type: 'success',
+          content: 'Tạo phòng mới thành công!',
+          duration: 5
+        });
+      };
+      success();
+    } else {
+      const error = () => {
+        messageApi.open({
+          type: 'error',
+          content: 'Tạo phòng mới thất bại',
+        });
+      };
+      error();
     }
   }
 
   return (
     <>
+      {contexHolder}
       <h2>Thêm phòng mới</h2>
 
       <Form
