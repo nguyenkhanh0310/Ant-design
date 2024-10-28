@@ -1,4 +1,4 @@
-import { Button, Form, Modal, Select, Switch, Input, InputNumber, notification } from "antd";
+import { Button, Form, Modal, Select, Switch, Input, InputNumber, notification, Spin } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { updateRoom } from "../../services/roomsService";
@@ -9,6 +9,7 @@ function EditRoom(props) {
   const { record, onReload } = props
   const [showModal, setShowModal] = useState(false);
   const [form] = Form.useForm();
+  const [spinning, setSpinning] = useState(false);
   const [notiApi, contextHolder] = notification.useNotification();
 
   const rules = [
@@ -19,23 +20,27 @@ function EditRoom(props) {
   ];
 
   const handleSubmit = async (values) => {
+    setSpinning(true);
     const response = await updateRoom(record.id, values);
-    if (response) {
-      notiApi.success({
-        message: 'Cập nhật thành công!',
-        description: `Bạn đã cập nhật thành công phòng ${record.roomName}`,
-        duration: 3
-      });
-      setShowModal(false);
-      onReload();
-    } else {
-      notiApi.error({
-        message: 'Cập nhật thất bại!',
-        description: `Bạn đã cập nhật thất bại phòng ${record.roomName}`,
-        duration: 3
-      });
-      setShowModal(false);
-    }
+    setTimeout(() => {
+      if (response) {
+        notiApi.success({
+          message: 'Cập nhật thành công!',
+          description: `Bạn đã cập nhật thành công phòng ${record.roomName}`,
+          duration: 3
+        });
+        setShowModal(false);
+        onReload();
+      } else {
+        notiApi.error({
+          message: 'Cập nhật thất bại!',
+          description: `Bạn đã cập nhật thất bại phòng ${record.roomName}`,
+          duration: 3
+        });
+        // setShowModal(false);
+      }
+      setSpinning(false);
+    }, 3000);
   }
 
   const handleShowModal = () => {
@@ -63,87 +68,89 @@ function EditRoom(props) {
         title="Chỉnh sửa phòng"
         footer={null}
       >
-        <Form
-          name="create-room"
-          onFinish={handleSubmit}
-          layout="horizonal"
-          form={form}
-          initialValues={record}
-        >
-          <Form.Item
-            label="Tên phòng"
-            name="roomName"
-            rules={[
-              {
-                required: true,
-                message: 'Please input your room name!',
-              },
-            ]}
+        <Spin spinning={spinning} tip="Đang cập nhật...">
+          <Form
+            name="create-room"
+            onFinish={handleSubmit}
+            layout="horizonal"
+            form={form}
+            initialValues={record}
           >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Số lượng giường"
-            name="bedQuantity"
-            rules={rules}
-          >
-            <InputNumber min={1} />
-          </Form.Item>
-
-          <Form.Item
-            label="Số người tối đa"
-            name="maximumPeople"
-            rules={rules}
-          >
-            <InputNumber min={1} />
-          </Form.Item>
-
-          <Form.Item
-            name="description"
-            label="Mô tả"
-          >
-            <Input.TextArea rows={6} showCount maxLength={100} />
-          </Form.Item>
-
-          <Form.Item
-            label="tiện ích"
-            name="utilities"
-            rules={rules}
-          >
-            <Select
-              mode="multiple"
-              placeholder="Chọn dịch vụ"
-              allowClear
+            <Form.Item
+              label="Tên phòng"
+              name="roomName"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please input your room name!',
+                },
+              ]}
             >
-              <Option value="Điều hòa">Điều hòa</Option>
-              <Option value="Nóng lạnh">Nóng lạnh</Option>
-              <Option value="Wifi">Wifi</Option>
-            </Select>
-          </Form.Item>
+              <Input />
+            </Form.Item>
 
-          <Form.Item
-            label="Trạng thái"
-            name="status"
-            valuePropName="checked"
-          >
-            <Switch checkedChildren="Còn phòng" unCheckedChildren="Hết phòng" />
-          </Form.Item>
+            <Form.Item
+              label="Số lượng giường"
+              name="bedQuantity"
+              rules={rules}
+            >
+              <InputNumber min={1} />
+            </Form.Item>
 
-          <Form.Item
-            label="Loại phòng"
-            name="roomType"
-            valuePropName="checked"
-          >
-            <Switch checkedChildren="VIP" unCheckedChildren="Thường" />
-          </Form.Item>
+            <Form.Item
+              label="Số người tối đa"
+              name="maximumPeople"
+              rules={rules}
+            >
+              <InputNumber min={1} />
+            </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Cập nhật
-            </Button>
-          </Form.Item>
-        </Form>
+            <Form.Item
+              name="description"
+              label="Mô tả"
+            >
+              <Input.TextArea rows={6} showCount maxLength={100} />
+            </Form.Item>
+
+            <Form.Item
+              label="tiện ích"
+              name="utilities"
+              rules={rules}
+            >
+              <Select
+                mode="multiple"
+                placeholder="Chọn dịch vụ"
+                allowClear
+              >
+                <Option value="Điều hòa">Điều hòa</Option>
+                <Option value="Nóng lạnh">Nóng lạnh</Option>
+                <Option value="Wifi">Wifi</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Trạng thái"
+              name="status"
+              valuePropName="checked"
+            >
+              <Switch checkedChildren="Còn phòng" unCheckedChildren="Hết phòng" />
+            </Form.Item>
+
+            <Form.Item
+              label="Loại phòng"
+              name="roomType"
+              valuePropName="checked"
+            >
+              <Switch checkedChildren="VIP" unCheckedChildren="Thường" />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                Cập nhật
+              </Button>
+            </Form.Item>
+          </Form>
+        </Spin>
       </Modal>
     </>
   );
